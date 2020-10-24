@@ -11,7 +11,10 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
   final ObjectWrapper<T> ct = ObjectWrapper();
 
   T get controller => ct.object;
+  T get c => ct.object;
+
   set controller(T value) => ct.object = value;
+  set c(T value) => ct.object = value;
 
   MvcWidget({
     Key key,
