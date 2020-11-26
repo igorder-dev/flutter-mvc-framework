@@ -9,7 +9,8 @@ extension TextHelpers on String {
   /// [maxWidth] - maximum width of the area for text painting
   int numberOfTextLinesToDisplay({TextStyle style, double maxWidth}) {
     final textSpan = TextSpan(text: this, style: style);
-    final textPainter = TextPainter(text: textSpan);
+    final textPainter =
+        TextPainter(text: textSpan, textDirection: TextDirection.ltr);
     textPainter.layout(maxWidth: maxWidth ?? double.infinity);
     final lineMetrics = textPainter.computeLineMetrics();
     return lineMetrics.length;
