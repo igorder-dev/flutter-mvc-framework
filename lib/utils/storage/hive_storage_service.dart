@@ -24,20 +24,39 @@ class HiveStorageService<T> extends StorageServiceBase<T> {
 
   @override
   Future<T> load() async {
-      await Hive.openBox<T>(_boxName);
-      _box = Hive.box(_boxName);
-      return _box.get(_defaultKey);
+    await loadWithKey(_defaultKey);
   }
 
   @override
   Future<void> save() async {
-    assert(isLoaded, 'Box $_boxName has to be loaded first');
-    await _box.put(_defaultKey, _data);
+    await saveWithKey(_defaultKey);
   }
 
+  Future<void> saveWithKey(String key) async {
+    assert(isLoaded, 'Box $_boxName has to be loaded first');
+    await _box.put(key, _data);
+  }
+
+  Future<void> loadWithKey(String key) async {
+    bool exists = await Hive.boxExists('boxName');
+    // If the box already exists, get a singleton entry of it
+    // and return the value for the key
+    if(!exists) {
+      _box = await Hive.openBox<T>(_boxName);
+      return _box.get(key);
+    }else {
+      _box = Hive.box(_boxName);
+      return _box.get(key);
+    }
+  }
+
+  // Getter/setter for data
   @override
   T get data => _data;
 
   @override
   set data(T value) => _data = value;
+
+
+
 }
