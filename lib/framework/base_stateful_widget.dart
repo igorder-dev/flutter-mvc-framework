@@ -45,7 +45,7 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
   Widget _build() {
     try {
       onWidgetBuild();
-      switch (controller.state) {
+      switch (controller?.state ?? MvcController.NORMAL_STATE) {
         case MvcController.NORMAL_STATE:
           return buildMain();
         case MvcController.LOADING_STATE:
@@ -54,7 +54,7 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
           return buildMain();
       }
     } on Exception catch (e) {
-      if (controller.onError(e)) {
+      if (controller?.onError(e) ?? false) {
         return buildError(e) ?? buildMain();
       } else
         throw e;
