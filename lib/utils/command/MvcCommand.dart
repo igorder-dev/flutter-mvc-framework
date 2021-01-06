@@ -210,7 +210,11 @@ class MvcCommandSync<TParam extends MvcCommandParams, TResult>
     if (canExecute) {
       try {
         _setStatus(MvcCommandStatus.executing);
-        result.result = _func(params ?? this.result.params);
+        if (_func == null) {
+          result.result = _func(params ?? this.result.params);
+        } else {
+          result.result = executeCommand(params ?? this.result.params);
+        }
         _futureCompleter?.complete(result);
         _setStatus(MvcCommandStatus.competed);
       } catch (error) {
@@ -227,6 +231,9 @@ class MvcCommandSync<TParam extends MvcCommandParams, TResult>
           "Command is not ready to  execute. Please use resetCommand function and check if canBeDoneOnce is not true");
     }
   }
+
+  @protected
+  TResult executeCommand([TParam params]) => null;
 }
 
 class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
@@ -259,7 +266,12 @@ class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
     if (canExecute) {
       try {
         _setStatus(MvcCommandStatus.executing);
-        result.result = await _func(params ?? this.result.params);
+        if (_func != null) {
+          result.result = await _func(params ?? this.result.params);
+        } else {
+          result.result =
+              await executeCommand(executeCommand ?? this.result.params);
+        }
         _futureCompleter?.complete(result);
         _setStatus(MvcCommandStatus.competed);
       } catch (error) {
@@ -276,6 +288,9 @@ class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
           "Command is not ready to  execute. Please use resetCommand function and check if canBeDoneOnce is not true");
     }
   }
+
+  @protected
+  Future<TResult> executeCommand([TParam params]) async => null;
 }
 
 class MvcCommandResult<TParam extends MvcCommandParams, TResult> {

@@ -23,14 +23,19 @@ class MvcCommandManager with GetxServiceMixin {
     assert(_workflows.containsKey(workflow),
         "Workflow [$workflow] is not configured. Please use [wf] method to setup");
     WorkflowEntryPoint entryPoint = _workflows[workflow];
-    await entryPoint.execute(entryPoint.workflowState);
+    await entryPoint.executeWithFuture(entryPoint.workflowState);
   }
 }
 
-abstract class CmdRunner {
-  @protected
+abstract class CmdRunner extends MvcCommandAsync<MvcCmdWorkflowState, void> {
+  CmdRunner()
+      : super(
+          func: null,
+        );
+
+  @override
   @mustCallSuper
-  Future<void> execute(MvcCmdWorkflowState workflowState) async {
+  Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
     MvcCommandManager()._currentRunner[workflowState._workflow] = this;
   }
 }
@@ -47,36 +52,36 @@ class SingleCmd extends CmdRunner {
   }) : assert(cmd != null);
 
   @override
-  Future<void> execute(MvcCmdWorkflowState workflowState) async {
-    super.execute(workflowState);
+  Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
+    super.executeCommand(workflowState);
     await Future.doWhile(() async {
       await Future.delayed(EXEC_TRIAL_INTERVAL.milliseconds);
       return !cmd.canExecute;
     });
     workflowState.lastCommandResult = await cmd.executeWithFuture(params);
-    if (after != null) after.execute(workflowState);
+    if (after != null) after.executeWithFuture(workflowState);
   }
 }
 
 class WorkflowEntryPoint extends CmdRunner {
   final MvcCmdWorkflowState workflowState;
-  CmdRunner cmd;
+  CmdRunner runner;
 
   WorkflowEntryPoint(this.workflowState);
 
-  void exec(CmdRunner cmd) {
-    this.cmd = cmd;
+  void exec(CmdRunner runner) {
+    this.runner = runner;
   }
 
   @override
-  Future<void> execute(MvcCmdWorkflowState workflowState) async {
-    assert(cmd != null, "Make sure you start workflow with [exec] command.");
-    super.execute(workflowState);
-    await cmd.execute(workflowState);
+  Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
+    assert(runner != null, "Make sure you start workflow with [exec] command.");
+    super.executeCommand(workflowState);
+    await runner.executeWithFuture(workflowState);
   }
 }
 
-class MvcCmdWorkflowState {
+class MvcCmdWorkflowState extends MvcCommandParams {
   String _workflow;
   MvcCommandResult lastCommandResult;
 }
