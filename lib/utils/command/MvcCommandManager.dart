@@ -11,10 +11,9 @@ class MvcCommandManager with GetxServiceMixin {
 
   final Map<String, CmdRunner> _currentRunner = Map();
 
-  WorkflowEntryPoint wf<TState extends MvcCmdWorkflowState>(
-      String name, TState initState) {
+  WorkflowEntryPoint wf(String name, MvcCmdWorkflowState initState) {
     if (!_workflows.containsKey(name)) {
-      _workflows[name] = WorkflowEntryPoint<TState>(initState);
+      _workflows[name] = WorkflowEntryPoint(initState);
       initState._workflow = name;
     }
     return _workflows[name];
@@ -28,17 +27,17 @@ class MvcCommandManager with GetxServiceMixin {
   }
 }
 
-abstract class CmdRunner<TState extends MvcCmdWorkflowState> {
+abstract class CmdRunner {
   @protected
   @mustCallSuper
-  Future<void> execute(TState workflowState) async {
+  Future<void> execute(MvcCmdWorkflowState workflowState) async {
     MvcCommandManager()._currentRunner[workflowState._workflow] = this;
   }
 }
 
-class SingleCmd<TState extends MvcCmdWorkflowState> extends CmdRunner<TState> {
+class SingleCmd extends CmdRunner {
   final MvcCommand cmd;
-  final CmdRunner<TState> after;
+  final CmdRunner after;
   final MvcCommandParams params;
 
   SingleCmd({
@@ -48,7 +47,7 @@ class SingleCmd<TState extends MvcCmdWorkflowState> extends CmdRunner<TState> {
   }) : assert(cmd != null);
 
   @override
-  Future<void> execute(TState workflowState) async {
+  Future<void> execute(MvcCmdWorkflowState workflowState) async {
     super.execute(workflowState);
     await Future.doWhile(() async {
       await Future.delayed(EXEC_TRIAL_INTERVAL.milliseconds);
@@ -59,10 +58,9 @@ class SingleCmd<TState extends MvcCmdWorkflowState> extends CmdRunner<TState> {
   }
 }
 
-class WorkflowEntryPoint<TState extends MvcCmdWorkflowState>
-    extends CmdRunner<TState> {
-  final TState workflowState;
-  CmdRunner<TState> cmd;
+class WorkflowEntryPoint extends CmdRunner {
+  final MvcCmdWorkflowState workflowState;
+  CmdRunner cmd;
 
   WorkflowEntryPoint(this.workflowState);
 
@@ -71,7 +69,7 @@ class WorkflowEntryPoint<TState extends MvcCmdWorkflowState>
   }
 
   @override
-  Future<void> execute(TState workflowState) async {
+  Future<void> execute(MvcCmdWorkflowState workflowState) async {
     assert(cmd != null, "Make sure you start workflow with [exec] command.");
     super.execute(workflowState);
     await cmd.execute(workflowState);
