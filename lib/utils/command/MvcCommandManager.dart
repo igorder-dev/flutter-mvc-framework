@@ -7,17 +7,24 @@ const int EXEC_TRIAL_INTERVAL = 10;
 class MvcCommandManager with GetxServiceMixin {
   factory MvcCommandManager() => Get.put(MvcCommandManager._());
   MvcCommandManager._();
-  final Map<String, CmdRunner> _workflows = Map();
+  final Map<String, WorkflowEntryPoint> _workflows = Map();
 
   final Map<String, CmdRunner> _currentRunner = Map();
 
-  CmdRunner wf<TState extends MvcCmdWorkflowState>(
+  WorkflowEntryPoint wf<TState extends MvcCmdWorkflowState>(
       String name, TState initState) {
     if (!_workflows.containsKey(name)) {
       _workflows[name] = WorkflowEntryPoint<TState>(initState);
       initState._workflow = name;
     }
     return _workflows[name];
+  }
+
+  void start(String workflow) async {
+    assert(_workflows.containsKey(workflow),
+        "Workflow [$workflow] is not configured. Please use [wf] method to setup");
+    WorkflowEntryPoint entryPoint = _workflows[workflow];
+    await entryPoint.execute(entryPoint.workflowState);
   }
 }
 
