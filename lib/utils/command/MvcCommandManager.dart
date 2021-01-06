@@ -19,11 +19,11 @@ class MvcCommandManager with GetxServiceMixin {
     return _workflows[name];
   }
 
-  void start(String workflow) async {
+  void start(String workflow) {
     assert(_workflows.containsKey(workflow),
         "Workflow [$workflow] is not configured. Please use [wf] method to setup");
     WorkflowEntryPoint entryPoint = _workflows[workflow];
-    await entryPoint.executeWithFuture(entryPoint.workflowState);
+    entryPoint.execute(entryPoint.workflowState);
   }
 }
 
