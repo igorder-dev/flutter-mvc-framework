@@ -11,9 +11,9 @@ class MvcCommandManager with GetxServiceMixin {
 
   final Map<String, CmdRunner> _currentRunner = Map();
 
-  WorkflowEntryPoint wf(String name, MvcCmdWorkflowState initState) {
+  WorkflowEntryPoint wf(String name, [MvcCmdWorkflowState initState]) {
     if (!_workflows.containsKey(name)) {
-      _workflows[name] = WorkflowEntryPoint(initState);
+      _workflows[name] = WorkflowEntryPoint(initState ?? MvcCmdWorkflowState());
       initState._workflow = name;
     }
     return _workflows[name];
@@ -76,7 +76,7 @@ class WorkflowEntryPoint extends CmdRunner {
   }
 }
 
-abstract class MvcCmdWorkflowState {
+class MvcCmdWorkflowState {
   String _workflow;
   MvcCommandResult lastCommandResult;
 }
