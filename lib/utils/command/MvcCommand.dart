@@ -28,7 +28,7 @@ abstract class MvcCommand<TParam extends MvcCommandParams, TResult>
     bool canBeDoneOnce = false,
     dynamic condition,
     bool catchExceptions = true,
-    bool autoReset = true,
+    bool autoReset = false,
     bool useCallStack = false,
   }) =>
       MvcCommandSync(
@@ -51,7 +51,7 @@ abstract class MvcCommand<TParam extends MvcCommandParams, TResult>
     bool canBeDoneOnce = false,
     dynamic condition,
     bool catchExceptions = true,
-    bool autoReset = true,
+    bool autoReset = false,
     bool useCallStack = false,
   }) =>
       MvcCommandAsync(
@@ -191,7 +191,7 @@ class MvcCommandSync<TParam extends MvcCommandParams, TResult>
     bool canBeDoneOnce = false,
     dynamic condition,
     bool catchExceptions = true,
-    bool autoReset = true,
+    bool autoReset = false,
     bool useCallStack = false,
   })  : _func = func,
         super(
@@ -247,7 +247,7 @@ class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
     bool canBeDoneOnce = false,
     dynamic condition,
     bool catchExceptions = true,
-    bool autoReset = true,
+    bool autoReset = false,
     bool useCallStack = false,
   })  : _func = func,
         super(
@@ -269,8 +269,7 @@ class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
         if (_func != null) {
           result.result = await _func(params ?? this.result.params);
         } else {
-          result.result =
-              await executeCommand(executeCommand ?? this.result.params);
+          result.result = await executeCommand(params ?? this.result.params);
         }
         _futureCompleter?.complete(result);
         _setStatus(MvcCommandStatus.competed);

@@ -43,4 +43,11 @@ class MvcHelpers {
       return _widgetsCache[item];
     }
   }
+
+  static bool conditional(dynamic condition) {
+    if (condition == null) return true;
+    if (condition is bool) return condition;
+    if (condition is bool Function()) return condition();
+    return true;
+  }
 }
