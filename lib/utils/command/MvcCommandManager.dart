@@ -34,6 +34,7 @@ abstract class CmdRunner extends MvcCommandAsync<MvcCmdWorkflowState, void> {
   CmdRunner()
       : super(
           func: null,
+          autoReset: true,
         );
 
   @override
