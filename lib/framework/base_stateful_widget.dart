@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:id_mvc_app_framework/model.dart';
+import '../utils/widgets/ticker_provider.dart';
+import '../utils/animation.dart';
+
 import 'base_controller.dart';
 
 abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
@@ -10,11 +13,23 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
   final String id;
   final ObjectWrapper<T> ct = ObjectWrapper();
 
+  final ObjectWrapper<AnimationContextManager> _acmWrapper = ObjectWrapper();
+
   T get controller => ct.object;
   T get c => ct.object;
 
   set controller(T value) => ct.object = value;
   set c(T value) => ct.object = value;
+
+  AnimationContextManager get animations => _acmWrapper.object;
+
+  void _initAnimations(TickerProvider vsync) {
+    if (_acmWrapper.object == null) {
+      _acmWrapper.object = AnimationContextManager(vsync: vsync);
+      initAnimations();
+      animations.init();
+    }
+  }
 
   MvcWidget({
     Key key,
@@ -39,8 +54,13 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
   @protected
   T initController() => null;
 
+  @protected
+  void initAnimations() => null;
+
   @override
-  Widget build(BuildContext context) => _buildWithController(context);
+  Widget build(BuildContext context) => TickerProviderBuilder(
+        builder: (TickerProvider vsync) => _buildWithController(context, vsync),
+      );
 
   Widget _build() {
     try {
@@ -61,8 +81,10 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
     }
   }
 
-  Widget _buildWithController(BuildContext context) {
-    final c = initController();
+  Widget _buildWithController(BuildContext context, TickerProvider vsync) {
+    //initializing animation engine
+
+    final c = setupController(initController());
     return GetBuilder<T>(
       global: this.global,
       tag: c?.id,
@@ -70,7 +92,33 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
       init: c,
       autoRemove: this.autoRemove,
       builder: _controllerBuilder,
+      initState: (state) {
+        _initAnimations(vsync);
+        c?.onInitState(this);
+      },
+      didUpdateWidget: (builder, state) {
+        _acmWrapper.object = c?.currentWidget?.animations;
+        _initAnimations(vsync);
+        c?.didUpdateWidget(this);
+      },
     );
+  }
+
+  T setupController(T init) {
+    T _controller;
+    var isRegistered = GetInstance().isRegistered<T>(tag: init?.id);
+
+    if (global) {
+      if (isRegistered) {
+        _controller = GetInstance().find<T>(tag: init?.id);
+      } else {
+        _controller = init;
+        GetInstance().put<T>(_controller, tag: init?.id);
+      }
+    } else {
+      _controller = init;
+    }
+    return _controller;
   }
 
   Widget _controllerBuilder(T controller) {
@@ -85,5 +133,9 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
       builder: (c) => builder(),
       id: id,
     );
+  }
+
+  dispose() {
+    animations.dispose();
   }
 }

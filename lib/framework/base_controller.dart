@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:id_mvc_app_framework/framework/base_stateful_widget.dart';
+import '../utils/animation.dart';
 
 abstract class MvcController extends GetxController {
   static const int NORMAL_STATE = 0;
@@ -34,5 +38,18 @@ abstract class MvcController extends GetxController {
 
   bool onError(Exception e) {
     return false;
+  }
+
+  MvcWidget _currentWidget;
+  MvcWidget get currentWidget => _currentWidget;
+
+  @mustCallSuper
+  void didUpdateWidget(MvcWidget widget) {
+    _currentWidget = widget;
+  }
+
+  @mustCallSuper
+  void onInitState(MvcWidget widget) {
+    _currentWidget = widget;
   }
 }
