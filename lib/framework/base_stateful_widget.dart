@@ -77,4 +77,13 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
     this.controller = controller;
     return _build();
   }
+
+  Widget updater({String id, @required Function() builder}) {
+    assert(builder != null);
+    return GetBuilder<T>(
+      init: c,
+      builder: (c) => builder(),
+      id: id,
+    );
+  }
 }
