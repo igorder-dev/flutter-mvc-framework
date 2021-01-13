@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
 import 'widgets/multi_animated_builder.dart';
+import 'async/async_lock.dart';
 
 class AnimationContextManager {
   final TickerProvider vsync;
@@ -30,6 +31,7 @@ class AnimationContextManager {
 
   Widget builder({
     List<dynamic> keys,
+    Widget child,
     @required TransitionBuilder builder,
   }) {
     List<Listenable> _buildContexts = _getContextControllers(keys);
@@ -37,18 +39,97 @@ class AnimationContextManager {
         "MultiAnmiatedBuilder needs at least one listendable");
     return MultiAnimatedBuilder(
       animations: _buildContexts,
+      child: child,
       builder: builder,
     );
   }
 
-  List<Listenable> _getContextControllers(List<dynamic> keys) {
+  List<AnimationController> _getContextControllers(List<dynamic> keys) {
     List<dynamic> _keys = keys ?? _contexts.keys.toList();
-    List<Listenable> _buildContexts = List();
+    List<AnimationController> _buildContextsControllers = List();
     _keys.forEach((key) {
       if (_contexts.containsKey(key))
-        _buildContexts.add(_contexts[key].controller);
+        _buildContextsControllers.add(_contexts[key].controller);
     });
-    return _buildContexts;
+    return _buildContextsControllers;
+  }
+
+  Future forward({List<dynamic> keys, double from, bool parallel = true}) {
+    return _executeContollersAction(
+      keys: keys,
+      parallel: parallel,
+      action: (controller) => controller.forward(from: from),
+    );
+  }
+
+  Future stop(
+      {List<dynamic> keys, bool canceled = true, bool parallel = true}) {
+    return _executeContollersAction(
+      keys: keys,
+      parallel: parallel,
+      action: (controller) => controller.stop(canceled: canceled),
+    );
+  }
+
+  Future repeat(
+      {List<dynamic> keys,
+      double min,
+      double max,
+      bool reverse = false,
+      Duration period,
+      bool parallel = true}) {
+    return _executeContollersAction(
+      keys: keys,
+      parallel: parallel,
+      action: (controller) => controller.repeat(
+          max: max, min: min, period: period, reverse: reverse),
+    );
+  }
+
+  Future _executeParallelAction(
+      {List<dynamic> keys,
+      dynamic Function(AnimationController controller) action}) {
+    List<AnimationController> _buildContexts = _getContextControllers(keys);
+    List<Future> _executionPool = List();
+    _buildContexts.forEach(
+      (context) {
+        var result = action(context);
+        if (result is Future) _executionPool.add(result);
+      },
+    );
+    return Future.wait(_executionPool);
+  }
+
+  Future _executeSeqAction(
+      {List<dynamic> keys,
+      dynamic Function(AnimationController controller) action}) async {
+    List<AnimationController> _buildContextControllers =
+        _getContextControllers(keys);
+    AsyncLock lock = AsyncLock();
+    for (var controller in _buildContextControllers) {
+      var result = action(controller);
+      if (result is Future) await result;
+    }
+    lock.release();
+    return lock.lock;
+  }
+
+  Future _executeContollersAction({
+    List<dynamic> keys,
+    dynamic Function(
+      AnimationController controller,
+    )
+        action,
+    bool parallel = true,
+  }) async {
+    switch (parallel) {
+      case true:
+        return _executeParallelAction(keys: keys, action: action);
+        break;
+      case false:
+        return _executeSeqAction(keys: keys, action: action);
+        break;
+    }
   }
 }
 
