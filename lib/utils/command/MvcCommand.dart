@@ -178,6 +178,10 @@ abstract class MvcCommand<TParam extends MvcCommandParams, TResult>
       _conditional(condition) && result.status == MvcCommandStatus.ready;
 
   MvcCommandStatus get status => result.status;
+
+  bool get isExecuting => status == MvcCommandStatus.executing;
+  bool get isReady => status == MvcCommandStatus.ready;
+  bool get isCompleted => status == MvcCommandStatus.competed;
 }
 
 class MvcCommandSync<TParam extends MvcCommandParams, TResult>
