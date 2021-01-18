@@ -141,8 +141,6 @@ abstract class MvcCommand<TParam extends MvcCommandParams, TResult>
   }
 
   void resetCommand() {
-    assert(status != MvcCommandStatus.executing,
-        "Cannot reset command status while it is executing");
     if (!canBeDoneOnce && status != MvcCommandStatus.executing) {
       update((val) {
         val.status = MvcCommandStatus.ready;
@@ -175,7 +173,8 @@ abstract class MvcCommand<TParam extends MvcCommandParams, TResult>
   }
 
   bool get canExecute =>
-      _conditional(condition) && result.status == MvcCommandStatus.ready;
+      _conditional(condition) &&
+      (result.status == MvcCommandStatus.ready || autoReset);
 
   MvcCommandStatus get status => result.status;
 
@@ -211,6 +210,7 @@ class MvcCommandSync<TParam extends MvcCommandParams, TResult>
 
   @override
   void execute([TParam params]) {
+    if (autoReset) resetCommand();
     if (canExecute) {
       try {
         _setStatus(MvcCommandStatus.executing);
@@ -220,13 +220,13 @@ class MvcCommandSync<TParam extends MvcCommandParams, TResult>
           result.result = executeCommand(params ?? this.result.params);
         }
         _futureCompleter?.complete(result);
+        _futureCompleter = null;
         _setStatus(MvcCommandStatus.competed);
       } catch (error) {
         _setError(error);
         _futureCompleter?.completeError(result.error);
+        _futureCompleter = null;
         if (!catchExceptions) rethrow;
-      } finally {
-        if (autoReset) resetCommand();
       }
     } else if (useCallStack && !canBeDoneOnce) {
       _addToCallStack(params);
@@ -266,7 +266,8 @@ class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
         );
 
   @override
-  void execute([TParam params]) async {
+  Future<void> execute([TParam params]) async {
+    if (autoReset) resetCommand();
     if (canExecute) {
       try {
         _setStatus(MvcCommandStatus.executing);
@@ -276,13 +277,13 @@ class MvcCommandAsync<TParam extends MvcCommandParams, TResult>
           result.result = await executeCommand(params ?? this.result.params);
         }
         _futureCompleter?.complete(result);
+        _futureCompleter = null;
         _setStatus(MvcCommandStatus.competed);
       } catch (error) {
         _setError(error);
         _futureCompleter?.completeError(result.error);
+        _futureCompleter = null;
         if (!catchExceptions) rethrow;
-      } finally {
-        if (autoReset) resetCommand();
       }
     } else if (useCallStack && !canBeDoneOnce) {
       _addToCallStack(params);
