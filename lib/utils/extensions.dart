@@ -1,5 +1,4 @@
 import 'package:flutter/painting.dart';
-import 'package:sprintf/sprintf.dart';
 
 ///Summarizes various String Extensions
 extension TextHelpers on String {
@@ -19,9 +18,5 @@ extension TextHelpers on String {
     textPainter.layout(maxWidth: maxWidth ?? double.infinity);
     final lineMetrics = textPainter.computeLineMetrics();
     return lineMetrics.length;
-  }
-
-  String format(List<dynamic> agrs) {
-    return sprintf(this, agrs);
   }
 }

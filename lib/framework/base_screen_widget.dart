@@ -4,7 +4,7 @@ import 'base_stateful_widget.dart';
 import '../utils/widgets/layout_builder_ex.dart';
 
 abstract class MvcScreen<T extends MvcController> extends MvcWidget<T> {
-  MvcScreen({Key key}) : super(key: key, global: true) {
+  MvcScreen({Key key, bool global = true}) : super(key: key, global: global) {
     defaultScreenHandler.builder = defaultScreenLayout;
   }
 

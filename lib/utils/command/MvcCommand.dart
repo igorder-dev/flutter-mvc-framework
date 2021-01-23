@@ -91,7 +91,7 @@ abstract class MvcCommand<TParam extends MvcCommandParams, TResult>
     if (triggers == null) return;
     _triggersWorker = everAll(triggers, (_) {
       if (canExecute) {
-        execute();
+        execute(result.params);
       } else {
         _addToCallStack();
       }

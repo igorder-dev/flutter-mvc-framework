@@ -49,7 +49,7 @@ abstract class MvcController extends GetxController {
   }
 
   @mustCallSuper
-  void onInitState(MvcWidget widget) {
+  void onInitState(MvcWidget widget, TickerProvider vsync) {
     _currentWidget = widget;
   }
 }

@@ -31,10 +31,11 @@ class MvcCommandManager with GetxServiceMixin {
 }
 
 abstract class CmdRunner extends MvcCommandAsync<MvcCmdWorkflowState, void> {
-  CmdRunner()
+  CmdRunner({List<RxInterface> triggers})
       : super(
           func: null,
           autoReset: true,
+          triggers: triggers,
         );
 
   @override
@@ -55,7 +56,7 @@ abstract class CmdRunner extends MvcCommandAsync<MvcCmdWorkflowState, void> {
     });
 
     var result = await cmd.executeWithFuture(params ?? workflowState);
-    workflowState.lastCommandResult = result;
+    workflowState?.lastCommandResult = result;
     return result;
   }
 }
@@ -69,7 +70,9 @@ class SingleCmd extends CmdRunner {
     this.cmd,
     this.after,
     this.params,
-  }) : assert(cmd != null);
+    List<RxInterface> triggers,
+  })  : assert(cmd != null),
+        super(triggers: triggers);
 
   @override
   Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
@@ -113,7 +116,8 @@ class MultiCmd extends CmdRunner {
     this.waitMode = MultiCmdAfterMode.waitAll,
     this.params,
     this.after,
-  });
+    List<RxInterface> triggers,
+  }) : super(triggers: triggers);
 
   @override
   Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
@@ -150,7 +154,7 @@ class MultiCmd extends CmdRunner {
       results.add(cmd.executeWithFuture(params));
     });
     var list = await Future.wait(results);
-    workflowState.lastCommandResult = list.last;
+    workflowState?.lastCommandResult = list.last;
   }
 
   Future<void> _waitAny(MvcCmdWorkflowState workflowState) async {
@@ -159,7 +163,7 @@ class MultiCmd extends CmdRunner {
       results.add(cmd.executeWithFuture(params));
     });
     if (results.length > 0) {
-      workflowState.lastCommandResult = await Future.any(results);
+      workflowState?.lastCommandResult = await Future.any(results);
     }
   }
 }
@@ -175,8 +179,10 @@ class PeriodicCmd extends CmdRunner {
     @required this.interval,
     this.params,
     this.stopIf = false,
+    List<RxInterface> triggers,
   })  : assert(cmd != null),
-        assert(interval != null);
+        assert(interval != null),
+        super(triggers: triggers);
 
   @override
   Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
@@ -201,7 +207,9 @@ class IfCmd extends CmdRunner {
     this.ifTrue,
     this.ifFalse,
     this.ifNull,
-  }) : assert(cmd != null);
+    List<RxInterface> triggers,
+  })  : assert(cmd != null),
+        super(triggers: triggers);
 
   @override
   Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
@@ -209,13 +217,13 @@ class IfCmd extends CmdRunner {
     var cmdRes = await runCmd(cmd, workflowState, params);
     if (cmdRes.result is bool) {
       if (cmdRes.result) {
-        ifTrue?.executeWithFuture(workflowState);
+        await ifTrue?.executeWithFuture(workflowState);
       } else {
-        Get.log("[ifCmd - false result]");
-        ifFalse?.executeWithFuture(workflowState);
+        await ifFalse?.executeWithFuture(workflowState);
       }
     } else {
-      (ifNull != null ? ifNull : ifTrue)?.executeWithFuture(workflowState);
+      await (ifNull != null ? ifNull : ifTrue)
+          ?.executeWithFuture(workflowState);
     }
   }
 }

@@ -94,7 +94,7 @@ abstract class MvcWidget<T extends MvcController> extends StatelessWidget {
       builder: _controllerBuilder,
       initState: (state) {
         _initAnimations(vsync);
-        c?.onInitState(this);
+        c?.onInitState(this, vsync);
       },
       didUpdateWidget: (builder, state) {
         _acmWrapper.object = c?.currentWidget?.animations;
