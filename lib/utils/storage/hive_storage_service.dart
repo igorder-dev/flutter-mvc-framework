@@ -1,18 +1,14 @@
 import 'package:hive/hive.dart';
 import 'package:id_mvc_app_framework/utils/storage/storage_service.dart';
 
-class HiveStorageService<T> extends StorageServiceBase<T> {
+class HiveStorageService extends StorageServiceBase<Box> {
   String _boxName;
-  String _defaultKey;
-  Box<T> _box;
-  T _data;
-  Iterable<String> _allKeys;
+  Box _box;
 
   // constructor with default box name
-  HiveStorageService(String boxName, {String defaultKey = 'default'})
+  HiveStorageService(String boxName)
       : assert(boxName != null),
         _boxName = boxName,
-        _defaultKey = 'default',
         super();
 
   // Closing the hive box
@@ -21,49 +17,66 @@ class HiveStorageService<T> extends StorageServiceBase<T> {
     assert(isLoaded, 'Box $_boxName has to be loaded first');
     await _box.close();
   }
+
   // Checking the open status
   @override
   bool get isLoaded => _box != null;
+  void assertLoaded() {
+    assert(isLoaded, 'Box $_boxName has to be loaded first');
+  }
 
   // To match StorageServiceBase
   @override
-  Future<T> load() async {
-    return await loadWithKey(_defaultKey);
+  Future<Box> load() async {
+    _box = await getOpenBox();
+
+    return _box;
   }
 
   @override
   Future<void> save() async {
-    await saveWithKey(_defaultKey);
-  }
-  // Main save/load wrappers
-  Future<void> saveWithKey(String key) async {
-    assert(isLoaded, 'Box $_boxName has to be loaded first');
-    await _box.put(key, _data);
+    assertLoaded();
   }
 
-  Future<T> loadWithKey(String key) async {
-    _box = await getOpenBox();
-    return _box.get(key);
+  void clear() {
+    assertLoaded();
+    _box.clear();
   }
 
-  static Future<HiveStorageService<String>> openAndLoadJsonBox(String boxName) async{
-    var storage = HiveStorageService<String>(boxName);
+  dynamic get(key, [defaultValue]) {
+    assertLoaded();
+    return _box.get(key, defaultValue: defaultValue);
+  }
+
+  void put(key, value) async {
+    assertLoaded();
+    await _box.put(key, value);
+  }
+
+  static Future<HiveStorageService> openAndLoad(String boxName) async {
+    var storage = HiveStorageService(boxName);
     if (!storage.isLoaded) await storage.load();
     return storage;
   }
 
   // Getter/setter for data
   @override
-  T get data => _data;
+  Box get data {
+    assertLoaded();
+    return _box;
+  }
 
   @override
-  set data(T value) => _data = value;
+  set data(Box value) {
+    assert(
+        false, 'You cannot assign box. Create seperate storage with Box name');
+  }
 
   // List of keys for iterating through them
-  List<dynamic> get allKeys => (isLoaded ? _box.keys.toList() : 0);
+  Set<dynamic> get allKeys => (isLoaded ? _box.keys.toSet() : Set());
 
   // To prevent opening new box every time
-  Future<Box<T>> getOpenBox() async {
+  Future<Box> getOpenBox() async {
     if (!Hive.isBoxOpen(_boxName)) {
       return await Hive.openBox(_boxName);
     }
@@ -71,5 +84,5 @@ class HiveStorageService<T> extends StorageServiceBase<T> {
   }
 
   // Checking if item is present in the box
-  bool contains(String key) => (isLoaded ? _box.containsKey(key) : false);
+  bool containsKey(dynamic key) => (isLoaded ? _box.containsKey(key) : false);
 }

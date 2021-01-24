@@ -4,3 +4,4 @@ export 'utils/config/config.dart';
 export 'utils/config/config_manager.dart';
 export 'utils/config/json_pref_config_manager.dart';
 export 'utils/config/shared_pref_config_manager.dart';
+export 'utils/config/hive_config_manager.dart';

@@ -22,11 +22,13 @@ class MvcCommandManager with GetxServiceMixin {
     return _workflows[name];
   }
 
-  void start(String workflow) {
+  Future<void> start(String workflow,
+      {MvcCmdWorkflowState workflowState}) async {
     assert(_workflows.containsKey(workflow),
         "Workflow [$workflow] is not configured. Please use [wf] method to setup");
     WorkflowEntryPoint entryPoint = _workflows[workflow];
-    entryPoint.execute(entryPoint.workflowState);
+    await entryPoint
+        .executeWithFuture(workflowState ?? entryPoint.workflowState);
   }
 }
 
@@ -97,6 +99,18 @@ class WorkflowEntryPoint extends CmdRunner {
     assert(runner != null, "Make sure you start workflow with [exec] command.");
     super.executeCommand(workflowState);
     await runner.executeWithFuture(workflowState);
+  }
+}
+
+class WorkflowRunCmd extends CmdRunner {
+  final String workflowName;
+
+  WorkflowRunCmd(this.workflowName);
+
+  @override
+  Future<void> executeCommand([MvcCmdWorkflowState workflowState]) async {
+    super.executeCommand(workflowState);
+    await MvcCommandManager().start(workflowName, workflowState: workflowState);
   }
 }
 

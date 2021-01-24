@@ -20,3 +20,11 @@ extension TextHelpers on String {
     return lineMetrics.length;
   }
 }
+
+extension FutureForEach on List {
+  Future<void> forEachFuture<T>(Future<void> Function(T item) doFunc) async {
+    for (var item in this) {
+      await doFunc(item);
+    }
+  }
+}
