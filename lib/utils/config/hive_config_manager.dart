@@ -47,7 +47,7 @@ class HiveConfigManager implements ConfigManagerBase {
   }
 
   @override
-  Set<String> getKeys() => _storage.allKeys;
+  Set<String> getKeys() => new Set<String>.from(_storage.allKeys);
 
   @override
   List getList(String key) {
