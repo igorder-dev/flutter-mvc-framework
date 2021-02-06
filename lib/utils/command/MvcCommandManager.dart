@@ -16,7 +16,8 @@ class MvcCommandManager with GetxServiceMixin {
 
   WorkflowEntryPoint wf(String name, [MvcCmdWorkflowState initState]) {
     if (!_workflows.containsKey(name)) {
-      _workflows[name] = WorkflowEntryPoint(initState ?? MvcCmdWorkflowState());
+      initState ??= MvcCmdWorkflowState();
+      _workflows[name] = WorkflowEntryPoint(initState);
       initState._workflow = name;
     }
     return _workflows[name];

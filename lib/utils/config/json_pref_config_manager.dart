@@ -61,7 +61,7 @@ class JsonConfigManager implements ConfigManagerBase {
 
   @override
   Set<String> getKeys() {
-    return _jsonObject.keys;
+    return _jsonObject.keys.toSet();
   }
 
   @override
