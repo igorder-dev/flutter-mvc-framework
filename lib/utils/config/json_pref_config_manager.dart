@@ -20,7 +20,7 @@ class JsonConfigManager implements ConfigManagerBase {
   }
 
   @override
-  void clear() {
+  Future<void> clear() async {
     initCheck();
     _jsonObject.clear();
   }
@@ -32,7 +32,7 @@ class JsonConfigManager implements ConfigManagerBase {
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     _jsonStorage.dispose();
   }
 
@@ -140,9 +140,9 @@ class JsonObjectAssetsStorageService extends StorageServiceBase<JsonObject> {
             TextAssetsStorageService(assetFile, reset: reset);
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     _data = null;
-    _assetStorageService.dispose();
+    await _assetStorageService.dispose();
   }
 
   @override

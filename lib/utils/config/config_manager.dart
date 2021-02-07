@@ -29,8 +29,8 @@ abstract class ConfigManagerBase {
   Future<bool> init();
   Future<bool> save();
 
-  void clear();
-  void dispose();
+  Future<void> clear();
+  Future<void> dispose();
 
   Type getValueType(String key);
 }

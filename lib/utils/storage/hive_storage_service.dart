@@ -13,7 +13,7 @@ class HiveStorageService extends StorageServiceBase<Box> {
 
   // Closing the hive box
   @override
-  void dispose() async {
+  Future<void> dispose() async {
     assert(isLoaded, 'Box $_boxName has to be loaded first');
     await _box.close();
   }
@@ -38,9 +38,9 @@ class HiveStorageService extends StorageServiceBase<Box> {
     assertLoaded();
   }
 
-  void clear() {
+  Future<void> clear() async {
     assertLoaded();
-    _box.clear();
+    await _box.clear();
   }
 
   dynamic get(key, [defaultValue]) {

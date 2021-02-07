@@ -23,7 +23,7 @@ class SharedPrefConfigManager implements ConfigManagerBase {
   ///try to decode string to Json if not succesfull returns null
 
   @override
-  void clear() {
+  Future<void> clear() async {
     initCheck();
     _pref.clear();
   }
@@ -35,7 +35,7 @@ class SharedPrefConfigManager implements ConfigManagerBase {
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     _pref = null;
   }
 

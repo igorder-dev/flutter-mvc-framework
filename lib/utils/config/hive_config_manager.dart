@@ -7,16 +7,16 @@ class HiveConfigManager implements ConfigManagerBase {
   HiveConfigManager(String boxName) : _storage = HiveStorageService(boxName);
 
   @override
-  void clear() {
-    _storage.clear();
+  Future<void> clear() async {
+    await _storage.clear();
   }
 
   @override
   bool containsKey(String key) => _storage.containsKey(key);
 
   @override
-  void dispose() {
-    _storage.dispose();
+  Future<void> dispose() async {
+    await _storage.dispose();
   }
 
   @override

@@ -9,7 +9,7 @@ abstract class StorageServiceBase<T> {
   Future<T> load();
   bool get isLoaded;
   Future<void> save();
-  void dispose();
+  Future<void> dispose();
 }
 
 class DummyStorageService<T> extends StorageServiceBase<T> {
@@ -17,7 +17,7 @@ class DummyStorageService<T> extends StorageServiceBase<T> {
   DummyStorageService(T data) : _data = data;
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     data = null;
   }
 
@@ -56,7 +56,7 @@ class TextAssetsStorageService extends StorageServiceBase<String> {
         super();
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     _file = null;
   }
 
