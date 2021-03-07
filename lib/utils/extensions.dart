@@ -21,7 +21,7 @@ extension TextHelpers on String {
   }
 }
 
-extension FutureForEach on List {
+extension FutureForEach on Iterable {
   Future<void> forEachFuture<T>(Future<void> Function(T item) doFunc) async {
     for (var item in this) {
       await doFunc(item);
