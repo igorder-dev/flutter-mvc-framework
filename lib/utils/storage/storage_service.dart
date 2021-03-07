@@ -30,8 +30,8 @@ class DummyStorageService<T> extends StorageServiceBase<T> {
   }
 
   @override
-  Future<void> save() {
-    return Future(null);
+  Future<void> save() async {
+    return;
   }
 
   @override
