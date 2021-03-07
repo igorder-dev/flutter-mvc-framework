@@ -59,6 +59,10 @@ class HiveStorageService extends StorageServiceBase<Box> {
     return storage;
   }
 
+  static void purge() async {
+    Hive.deleteFromDisk();
+  }
+
   // Getter/setter for data
   @override
   Box get data {
