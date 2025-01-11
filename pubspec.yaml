@@ -5,26 +5,26 @@ author: Igor Derevyanko
 homepage: https://github.com/igorder-dev
 
 environment:
-  sdk: ">=2.8.0 <3.0.0"
+  sdk: ^3.6.0
 
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^0.5.7+3
-  path_provider: ^1.6.10
-  http: ^0.12.1
-  rxdart: ^0.24.1
-  catcher: ^0.3.20
-  get: ^3.11.1
-  hive: ^1.4.4+1
-  hive_flutter: ^0.3.1
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  http: ^1.2.0
+  rxdart: ^0.27.7
+  catcher: ^0.8.0
+  get: ^4.6.6
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 #  hive_generator: ^0.8.2
-  build_runner: ^1.10.9
-  json_serializable: ^3.5.1
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
